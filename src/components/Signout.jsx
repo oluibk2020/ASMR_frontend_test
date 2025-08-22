@@ -11,6 +11,7 @@ function Signout() {
     function signOutHandler() {
         localStorage.removeItem("bookApp_token");
         setIsAuth(false)
+        toast.success("Successfully signed out")
         navigate("/login")
     }
 
@@ -24,7 +25,7 @@ function Signout() {
         <div className="flex items-center justify-center mt-4">
           <button
             type="button"
-            className="px-4 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            className="px-4 py-2 rounded-md bg-black text-white hover:bg-black focus:outline-none focus:ring-2 focus:ring-black dark:bg-black dark:hover:bg-black dark:focus:ring-black"
             onClick={signOutHandler}
           >
             Sign out

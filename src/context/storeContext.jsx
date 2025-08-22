@@ -38,7 +38,6 @@ export const StoreProvider = ({ children }) => {
     // console.log(localStorageToken);
     const tokenExpiryStatus = isTokenExpired(localStorageToken);
     if (tokenExpiryStatus === false) {
-      console.log("got here");
       setToken(localStorageToken);
       setIsAuth(true);
       if (decodedPayload.isAdmin === true) {
@@ -85,7 +84,7 @@ export const StoreProvider = ({ children }) => {
       });
 
       const data = await response.json();
-      console.log(data);
+
       setProjects(data.projects);
       setIsLoading(false);
     } catch (error) {
@@ -138,6 +137,8 @@ export const StoreProvider = ({ children }) => {
     setFullName,
     fetchProfile,
     isAdmin,
+    isTokenExpired,
+    setIsAdmin,
   };
 
   return (

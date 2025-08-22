@@ -15,7 +15,8 @@ function Login() {
     isLoading,
     setIsLoading,
     setIsAuth,
-    setToken
+    setToken,
+    setIsAdmin
   } = useContext(storeContext);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -34,20 +35,18 @@ function Login() {
         },
         body: JSON.stringify({
           email: email,
-          password: password
+          password: password,
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data.message[0].message) // joi message
-        toast.error(data.message) //api valid msg
+        toast.error(data.message[0].message); // joi message
+        toast.error(data.message); //api valid msg
         setIsLoading(false);
         return;
       }
-
-   
 
       //save on local storage
       localStorage.setItem("bookApp_token", data.access_token);
@@ -55,13 +54,40 @@ function Login() {
       //save on context
       setToken(data.access_token);
 
+      let decodedPayload = null;
+
+      function isTokenExpired(token) {
+        if (!token) return;
+
+        try {
+          const [, payload] = token.split(".");
+          decodedPayload = JSON.parse(atob(payload));
+          return decodedPayload.exp * 1000 < Date.now();
+        } catch (error) {
+          console.log(error);
+        }
+      }
+
+      // console.log(localStorageToken);
+      const tokenExpiryStatus = isTokenExpired(data.access_token);
+      if (tokenExpiryStatus === false) {
+        if (decodedPayload.isAdmin === true) {
+          setIsAdmin(true);
+        } else {
+          setIsAdmin(false);
+        }
+      } else {
+        setIsAuth(false);
+        setIsAdmin(false);
+        localStorage.removeItem("bookApp_token");
+        return
+      }
+
       toast.success("login successful");
       //set auth globally on app
       setIsAuth(true);
       navigate("/dashboard");
       setIsLoading(false);
-
-
     } catch (error) {
       console.log(error);
       setIsLoading(false);
