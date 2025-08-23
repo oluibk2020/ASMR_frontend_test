@@ -73,6 +73,7 @@ function Dashboard() {
       toast.success(data.message);
       fetchProjects(); // update the book list
       clearForm();
+      setShowForm(false);
       setIsLoading(false);
       return;
     } catch (error) {

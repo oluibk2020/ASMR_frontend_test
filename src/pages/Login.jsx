@@ -22,10 +22,8 @@ function Login() {
 
   const navigate = useNavigate();
 
- async function submitHandler(e) {
+  async function submitHandler(e) {
     e.preventDefault()
-
-    setIsLoading(true);
 
     try {
       const response = await fetch(`${apiUrl}/auth/login`, {
@@ -33,63 +31,31 @@ function Login() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          email: email,
-          password: password,
-        }),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
+      const {access_token: token} = data
 
       if (!response.ok) {
-        toast.error(data.message[0].message); // joi message
-        toast.error(data.message); //api valid msg
-        setIsLoading(false);
+        toast.error(
+          data.message?.[0]?.message || data[0]?.message || data.message
+        );
         return;
       }
 
-      //save on local storage
-      localStorage.setItem("bookApp_token", data.access_token);
+      localStorage.setItem("bookApp_token", token);
+      setToken(token);
 
-      //save on context
-      setToken(data.access_token);
+      const { exp } = JSON.parse(atob(token.split(".")[1]));
+      const isExpired = exp * 1000 < Date.now();
 
-      let decodedPayload = null;
-
-      function isTokenExpired(token) {
-        if (!token) return;
-
-        try {
-          const [, payload] = token.split(".");
-          decodedPayload = JSON.parse(atob(payload));
-          return decodedPayload.exp * 1000 < Date.now();
-        } catch (error) {
-          console.log(error);
-        }
-      }
-
-      // console.log(localStorageToken);
-      const tokenExpiryStatus = isTokenExpired(data.access_token);
-      if (tokenExpiryStatus === false) {
-        if (decodedPayload.isAdmin === true) {
-          setIsAdmin(true);
-        } else {
-          setIsAdmin(false);
-        }
-      } else {
-        setIsAuth(false);
-        setIsAdmin(false);
-        localStorage.removeItem("bookApp_token");
-        return
-      }
-
-      toast.success("login successful");
-      //set auth globally on app
-      setIsAuth(true);
+      setIsAdmin(isExpired ? false : JSON.parse(atob(token.split(".")[1])).isAdmin);
+      setIsAuth(!isExpired);
       navigate("/dashboard");
-      setIsLoading(false);
     } catch (error) {
       console.log(error);
+    } finally {
       setIsLoading(false);
     }
   }
